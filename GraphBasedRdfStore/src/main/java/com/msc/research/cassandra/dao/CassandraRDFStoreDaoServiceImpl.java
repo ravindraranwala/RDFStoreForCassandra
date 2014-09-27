@@ -8,6 +8,8 @@ import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.msc.research.cassandra.model.RDFTriple;
 import com.msc.research.cassandra.transformer.DataTransformer;
 import com.msc.research.cassandra.transformer.ResultSetToRDFTripleTransformer;
@@ -50,7 +52,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 	/*
 	 * Loads the RDF data into the triple table.
 	 */
-	private void loadData(final List<RDFTriple> rdfTriples) {
+	private void loadData(final StmtIterator stmtIterator) {
 		Session session = CassandraUtil.getSession();
 		PreparedStatement statement = session
 				.prepare("INSERT INTO rdfstore.tripletab "
@@ -58,14 +60,17 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 
 		BoundStatement boundStatement = new BoundStatement(statement);
 
-		for (RDFTriple rdfTriple : rdfTriples) {
-			session.execute(boundStatement.bind(rdfTriple.getSubject(),
-					rdfTriple.getPredicate(), rdfTriple.getObject()));
+		while (stmtIterator.hasNext()) {
+			Statement stmt = (Statement) stmtIterator.next();
+			session.execute(boundStatement
+					.bind(stmt.getSubject().toString(), stmt.getPredicate()
+							.toString(), stmt.getObject().toString()));
 		}
+
 	}
 
 	@Override
-	public List<RDFTriple> getRdfData() {
+	public ResultSet getRdfData() {
 		ResultSet resultSet = CassandraUtil.getSession().execute(
 				"SELECT * FROM rdfstore.tripletab;");
 
@@ -83,7 +88,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 		// }
 		//
 		// System.out.println("\n");
-		return transformer.transform(resultSet);
+		return resultSet;
 	}
 
 	/**
@@ -106,9 +111,9 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 	}
 
 	@Override
-	public void createRDFStore(List<RDFTriple> rdfTriples) {
+	public void createRDFStore(final StmtIterator stmtIterator) {
 		this.createSchema();
-		this.loadData(rdfTriples);
+		this.loadData(stmtIterator);
 
 	}
 

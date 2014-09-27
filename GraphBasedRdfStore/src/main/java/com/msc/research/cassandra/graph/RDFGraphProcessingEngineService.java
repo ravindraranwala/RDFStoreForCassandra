@@ -1,8 +1,8 @@
 package com.msc.research.cassandra.graph;
 
 import java.io.OutputStream;
-import java.util.List;
 
+import com.datastax.driver.core.ResultSet;
 import com.msc.research.cassandra.exception.RDFGraphProcessisngException;
 import com.msc.research.cassandra.model.RDFTriple;
 
@@ -19,14 +19,12 @@ public interface RDFGraphProcessingEngineService {
 	 * Builds the RDF graph data model for a given set of {@link RDFTriple}
 	 * instances.
 	 * 
-	 * @param rdfTriples
-	 *            Set of {@link RDFTriple} instances used to build the in-memory
-	 *            RDF graph model.
+	 * @param resultSet
+	 *            Set of RDf triples stored in the cassandra database.
 	 * @throws RDFGraphProcessisngException
 	 *             If an ERROR occurs during the RDF Graph processing.
 	 */
-	void build(final List<RDFTriple> rdfTriples)
-			throws RDFGraphProcessisngException;
+	void build(final ResultSet resultSet) throws RDFGraphProcessisngException;
 
 	/**
 	 * Traverse the RDF graph model and prints it to the console.
@@ -49,15 +47,16 @@ public interface RDFGraphProcessingEngineService {
 	/**
 	 * Queries the RDF Model and retrieves the answers.
 	 * 
-	 * @param triple
-	 *            A triple instance with optional subject, predicate and object
-	 *            values. NULL value for each of them matches with anything.
+	 * @param pre
+	 *            SPARQl query prefix
+	 * @param qs
+	 *            SpARQL query string value.
 	 * @return A list of matching {@link RDFTriple} instances with the relevant
-	 *         data in it.
+	 *         v
 	 * @throws RDFGraphProcessisngException
 	 *             If an ERROR occurs during the RDF Graph processing.
 	 */
-	List<RDFTriple> queryRdfModel(final RDFTriple triple)
+	void queryRdfModel(final String pre, final String qs)
 			throws RDFGraphProcessisngException;
 
 }

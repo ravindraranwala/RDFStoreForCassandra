@@ -1,8 +1,7 @@
 package com.msc.research.cassandra.dao;
 
-import java.util.List;
-
-import com.msc.research.cassandra.model.RDFTriple;
+import com.datastax.driver.core.ResultSet;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * This interface defines all the necessary methods to build an RDF store and
@@ -25,17 +24,17 @@ public interface RDFStoreDaoService {
 	 * the RDF data into it. The triple store usually contains a triple table
 	 * which contains SUBJECT, PREDICATE and OBJECT as columns in it.
 	 * 
-	 * @param rdfTriples
-	 *            {@link RDFTriple} instances to be loaded to the RDF store.
+	 * @param stmtIterator
 	 */
-	void createRDFStore(final List<RDFTriple> rdfTriples);
+	void createRDFStore(final StmtIterator stmtIterator);
 
 	/**
 	 * Queries the RDF store and fetches all the triples stored in it.
 	 * 
-	 * @return A list of {@link RDFTriple} instances stored in the RDF store.
+	 * @return A {@link ResultSet} instance which is backed by the RDF data in
+	 *         the cassandra cluster.
 	 */
-	List<RDFTriple> getRdfData();
+	ResultSet getRdfData();
 
 	/**
 	 * Merely drops the RDF store created.
