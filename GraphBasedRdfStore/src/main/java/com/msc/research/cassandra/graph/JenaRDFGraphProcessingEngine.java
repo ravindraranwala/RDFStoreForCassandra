@@ -1,15 +1,8 @@
 package com.msc.research.cassandra.graph;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Logger;
-
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -29,6 +22,7 @@ import com.msc.research.cassandra.exception.RDFGraphProcessisngException;
 import com.msc.research.cassandra.model.RDFTriple;
 import com.msc.research.cassandra.transformer.DataTransformer;
 import com.msc.research.cassandra.transformer.StatementToRDFTripleTransformer;
+import com.msc.research.cassandra.util.NumberUtil;
 
 /**
  * Apache Jena implementation of the Graph Processisng API.
@@ -62,7 +56,7 @@ public class JenaRDFGraphProcessingEngine implements
 
 			final String strObjValue = row.getString("object");
 			final String splitterSymbol = "^^";
-			int bound = strObjValue.indexOf("^^");
+			int bound = strObjValue.indexOf(splitterSymbol);
 
 			// This is the default value.
 			RDFNode objectNode = model.createResource(row.getString("object"));
@@ -72,12 +66,12 @@ public class JenaRDFGraphProcessingEngine implements
 
 				// Population can NOT be a double, it should be a long value.
 				// So, merely omit it.
-				if (isDouble(numericValue)
+				if (NumberUtil.isDouble(numericValue)
 						&& !row.getString("predicate").contains(
 								"http://www.geonames.org/ontology#population")) {
 					objectNode = model.createTypedLiteral(new Double(
 							numericValue));
-				} else if (isLong(numericValue)) {
+				} else if (NumberUtil.isLong(numericValue)) {
 					if (numericValue.indexOf(",") >= 0) {
 						numericValue = new StringBuffer(numericValue)
 								.deleteCharAt(numericValue.indexOf(","))
@@ -100,74 +94,28 @@ public class JenaRDFGraphProcessingEngine implements
 			resource.addProperty(property, objectNode);
 		}
 
-		// String inputFileName =
-		// "/home/ravindra/msc/Year2/msc-research/SPARQL-benchmarking-tool/db-pedia/homepages-fixed.nt";
-		// model = RDFDataMgr.loadModel(inputFileName, Lang.NTRIPLES);
-		//
-		// inputFileName =
-		// "/home/ravindra/msc/Year2/msc-research/SPARQL-benchmarking-tool/db-pedia/geocoordinates-fixed.nt";
-		// Model geocoordinateModel = RDFDataMgr.loadModel(inputFileName);
-		// model.add(geocoordinateModel);
-
 		logger.info("Graph Model is built successfully.");
 		// logger.info("Printing the Graph Model.");
 
-		FileOutputStream fop = null;
-		File file = new File("test-rdf.txt");
-		try {
-			fop = new FileOutputStream(file);
-
-			// if file doesnt exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		RDFDataMgr.write(fop, model, Lang.NTRIPLES);
-		// RDFDataMgr.write(System.out, model, Lang.NTRIPLES);
-		// model.add(iter)
-		// for (RDFTriple rdfTriple : rdfTriples) {
+		// FileOutputStream fop = null;
+		// File file = new File("test-rdf.txt");
+		// try {
+		// fop = new FileOutputStream(file);
 		//
-		// // Creates the resource first.
-		// Resource resource = model.createResource(rdfTriple.getSubject());
-		// // Then creates the property with it's predicate label.
-		// Property property = model.createProperty(rdfTriple.getPredicate());
-		// /*
-		// * Finally add the property and its associated value to the
-		// * resource.
-		// */
-		// resource.addProperty(property, rdfTriple.getObject());
+		// // if file doesnt exists, then create it
+		// if (!file.exists()) {
+		// file.createNewFile();
+		// }
+		// } catch (FileNotFoundException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
 		// }
 
-	}
+		// RDFDataMgr.write(fop, model, Lang.NTRIPLES);
 
-	public static boolean isLong(String s) {
-		try {
-			if (s.contains(",")) {
-				s = new StringBuffer(s).deleteCharAt(s.indexOf(",")).toString();
-			}
-			Long.parseLong(s);
-		} catch (NumberFormatException e) {
-			return false;
-		}
-		// only got here if we didn't return false
-		return true;
-	}
-
-	public static boolean isDouble(String s) {
-		try {
-			Double.parseDouble(s);
-		} catch (NumberFormatException e) {
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
