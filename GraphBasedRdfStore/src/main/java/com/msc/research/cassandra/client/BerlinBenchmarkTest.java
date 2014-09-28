@@ -79,10 +79,10 @@ public class BerlinBenchmarkTest {
 		// "<http://dbpedia.org/resource/Metropolitan_Museum_of_Art> ?p ?o",
 		// "}");
 
-		// final String pre = StrUtils
-		// .strjoinNL("PREFIX p: <http://dbpedia.org/resource/>");
-		// final String qs = StrUtils.strjoinNL("SELECT ?p ?o WHERE {",
-		// "p:Metropolitan_Museum_of_Art ?p ?o", "}");
+		final String pre = StrUtils
+				.strjoinNL("PREFIX p: <http://dbpedia.org/resource/>");
+		final String qs = StrUtils.strjoinNL("SELECT ?p ?o WHERE {",
+				"p:Metropolitan_Museum_of_Art ?p ?o", "}");
 
 		// final String pre = StrUtils
 		// .strjoinNL("PREFIX p: <http://dbpedia.org/resource/>");
@@ -90,23 +90,23 @@ public class BerlinBenchmarkTest {
 		// final String qs = StrUtils.strjoinNL("SELECT ?p ?o", "WHERE {",
 		// "p:Kevin_Bacon  ?p ?o", "}");
 
-		final String pre = StrUtils.strjoinNL(
-				"PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
-				"PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
-				"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
-				"PREFIX p: <http://dbpedia.org/property/>");
-
-		final String qs = StrUtils
-				.strjoinNL(
-						"SELECT ?s ?homepage WHERE {",
-						"<http://dbpedia.org/resource/New_York_City> geo:lat ?nyLat .",
-						"<http://dbpedia.org/resource/New_York_City> geo:long ?nyLong . ",
-						"?s geo:lat ?lat .", "?s geo:long ?long .",
-						"?s foaf:homepage ?homepage .", "FILTER (",
-						"?lat        <=     ?nyLat + 0.3190235436 &&",
-						"?long       >=     ?nyLong - 0.8679199218 &&",
-						"?lat        >=     ?nyLat - 0.3190235436 && ",
-						"?long       <=     ?nyLong + 0.8679199218)", "}");
+		// final String pre = StrUtils.strjoinNL(
+		// "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
+		// "PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
+		// "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
+		// "PREFIX p: <http://dbpedia.org/property/>");
+		//
+		// final String qs = StrUtils
+		// .strjoinNL(
+		// "SELECT ?s ?homepage WHERE {",
+		// "<http://dbpedia.org/resource/New_York_City> geo:lat ?nyLat .",
+		// "<http://dbpedia.org/resource/New_York_City> geo:long ?nyLong . ",
+		// "?s geo:lat ?lat .", "?s geo:long ?long .",
+		// "?s foaf:homepage ?homepage .", "FILTER (",
+		// "?lat        <=     ?nyLat + 0.3190235436 &&",
+		// "?long       >=     ?nyLong - 0.8679199218 &&",
+		// "?lat        >=     ?nyLat - 0.3190235436 && ",
+		// "?long       <=     ?nyLong + 0.8679199218)", "}");
 
 		/*
 		 * Homepages of resources roughly in the area of Berlin.

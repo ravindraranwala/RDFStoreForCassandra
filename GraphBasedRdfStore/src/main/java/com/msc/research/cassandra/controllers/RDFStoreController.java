@@ -1,6 +1,8 @@
 package com.msc.research.cassandra.controllers;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.riot.Lang;
@@ -11,6 +13,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.msc.research.cassandra.dao.CassandraRDFStoreDaoServiceImpl;
 import com.msc.research.cassandra.dao.RDFStoreDaoService;
+import com.msc.research.cassandra.exception.InvalidChoiceException;
 import com.msc.research.cassandra.exception.RDFGraphProcessisngException;
 import com.msc.research.cassandra.graph.JenaRDFGraphProcessingEngine;
 import com.msc.research.cassandra.graph.RDFGraphProcessingEngineService;
@@ -71,20 +74,20 @@ public class RDFStoreController {
 		 * Homepages of resources roughly in the area of Berlin.
 		 */
 
-		final String pre = StrUtils.strjoinNL(
-				"PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
-				"PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
-				"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>");
-
-		final String qs = StrUtils.strjoinNL("SELECT ?s ?homepage WHERE {",
-				"<http://dbpedia.org/resource/Berlin> geo:lat ?berlinLat .",
-				"<http://dbpedia.org/resource/Berlin> geo:long ?berlinLong .",
-				"?s geo:lat ?lat .", "?s geo:long ?long .",
-				"?s foaf:homepage ?homepage .", "FILTER (",
-				"?lat        <=     ?berlinLat + 0.03190235436 &&",
-				"?long       >=     ?berlinLong - 0.08679199218 &&",
-				"?lat        >=     ?berlinLat - 0.03190235436 && ",
-				"?long       <=     ?berlinLong + 0.08679199218)", "}");
+		// final String pre = StrUtils.strjoinNL(
+		// "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
+		// "PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
+		// "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>");
+		//
+		// final String qs = StrUtils.strjoinNL("SELECT ?s ?homepage WHERE {",
+		// "<http://dbpedia.org/resource/Berlin> geo:lat ?berlinLat .",
+		// "<http://dbpedia.org/resource/Berlin> geo:long ?berlinLong .",
+		// "?s geo:lat ?lat .", "?s geo:long ?long .",
+		// "?s foaf:homepage ?homepage .", "FILTER (",
+		// "?lat        <=     ?berlinLat + 0.03190235436 &&",
+		// "?long       >=     ?berlinLong - 0.08679199218 &&",
+		// "?lat        >=     ?berlinLat - 0.03190235436 && ",
+		// "?long       <=     ?berlinLong + 0.08679199218)", "}");
 
 		/*
 		 * Homepages of resources roughly in the area of New York City
@@ -107,7 +110,10 @@ public class RDFStoreController {
 		// "?lat        >=     ?nyLat - 0.3190235436 && ",
 		// "?long       <=     ?nyLong + 0.8679199218)", "}");
 
-		rdfGraphProcessingEngineService.queryRdfModel(pre, qs);
+		// rdfGraphProcessingEngineService.queryRdfModel(pre, qs);
+
+		processUserInput(rdfGraphProcessingEngineService);
+
 		// Find all the films directed by J.Cameron.
 		// RDFTriple triple = new RDFTriple("J_Cameron", "directs", null);
 		// List<RDFTriple> queryResult = rdfGraphProcessingEngineService
@@ -129,32 +135,120 @@ public class RDFStoreController {
 		model.add(geocoordinateModel);
 
 		return model.listStatements();
+	}
 
-		// print out the predicate, subject and object of each statement
-		// while (iter.hasNext()) {
-		// Statement stmt = iter.nextStatement(); // get next statement
-		// Resource subject = stmt.getSubject(); // get the subject
-		// Property predicate = stmt.getPredicate(); // get the predicate
-		// RDFNode object = stmt.getObject(); // get the object
-		//
-		// rdfTriples.add(new RDFTriple(subject.toString(), predicate
-		// .toString(), object.toString()));
-		// }
-		// rdfTriples.add(new RDFTriple("P_Haggis", "directs", "Crash"));
-		// rdfTriples.add(new RDFTriple("Crash", "casts", "D_Cheadle"));
-		// rdfTriples.add(new RDFTriple("Crash", "has_award", "Best_Picture"));
-		// rdfTriples.add(new RDFTriple("J_Cameron", "directs", "Titanic"));
-		// rdfTriples.add(new RDFTriple("J_Cameron", "directs", "Avatar"));
-		// rdfTriples.add(new RDFTriple("J_Cameron", "wins", "Oscar_Award"));
-		// rdfTriples.add(new RDFTriple("Titanic", "has_award",
-		// "Best_Picture"));
-		// rdfTriples.add(new RDFTriple("Titanic", "casts", "L_DiCaprio"));
-		// rdfTriples.add(new RDFTriple("Avatar", "casts", "S_Worthington"));
-		// rdfTriples.add(new RDFTriple("G_Lucas", "wins", "Saturn-Award"));
-		// rdfTriples.add(new RDFTriple("G_Lucas", "writes", "Star War VI"));
-		// rdfTriples.add(new RDFTriple("Star War VI", "casts", "M_Hamill"));
+	private static String readInput() throws IOException {
+		// open up standard input
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		return br.readLine();
+	}
 
-		// return rdfTriples;
+	private static void processUserInput(
+			RDFGraphProcessingEngineService rdfGraphProcessingEngineService) {
+		// Prompt the user first.
+		System.out
+				.println("***********************************************************************");
+		System.out.println("You have FOUR queries to execute.");
+		System.out
+				.println("To Get infor about  Metropolitan_Museum_of_Art:- ENTER 1");
+		System.out.println("To Get infor about Kevin Bacon:- ENTER 2");
+		System.out
+				.println("To Get Homepages of resources roughly in the area of Berlin:- ENTER 3");
+		System.out
+				.println("To Get Homepages of resources roughly in the area of New York City: ENTER 4");
+		System.out.println("To QUIT: ENTER 5");
+		System.out
+				.println("***********************************************************************");
+
+		while (true) {
+			System.out.println("Enter a number between <1-4> or 5 to Quit");
+			// read the input given by the user.
+			try {
+				String userInput = readInput();
+				int choice = Integer.parseInt(userInput);
+				String[] sparqlQuery = generateSPARQLQuery(choice);
+
+				// Executing the query against the RDF model.
+				rdfGraphProcessingEngineService.queryRdfModel(sparqlQuery[0],
+						sparqlQuery[1]);
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidChoiceException e) {
+				System.out.println("Bye !");
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				break;
+			} catch (RDFGraphProcessisngException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static String[] generateSPARQLQuery(final int choice)
+			throws InvalidChoiceException {
+		String pre = null;
+		String qs = null;
+		if (choice == 1) {
+			pre = StrUtils
+					.strjoinNL("PREFIX p: <http://dbpedia.org/resource/>");
+			qs = StrUtils.strjoinNL("SELECT ?p ?o WHERE {",
+					"p:Metropolitan_Museum_of_Art ?p ?o", "}");
+		} else if (choice == 2) {
+			pre = StrUtils
+					.strjoinNL("PREFIX p: <http://dbpedia.org/resource/>");
+
+			qs = StrUtils.strjoinNL("SELECT ?p ?o", "WHERE {",
+					"p:Kevin_Bacon  ?p ?o", "}");
+		} else if (choice == 3) {
+			/*
+			 * Homepages of resources roughly in the area of Berlin.
+			 */
+
+			pre = StrUtils.strjoinNL(
+					"PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
+					"PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
+					"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>");
+
+			qs = StrUtils
+					.strjoinNL(
+							"SELECT ?s ?homepage WHERE {",
+							"<http://dbpedia.org/resource/Berlin> geo:lat ?berlinLat .",
+							"<http://dbpedia.org/resource/Berlin> geo:long ?berlinLong .",
+							"?s geo:lat ?lat .",
+							"?s geo:long ?long .",
+							"?s foaf:homepage ?homepage .",
+							"FILTER (",
+							"?lat        <=     ?berlinLat + 0.03190235436 &&",
+							"?long       >=     ?berlinLong - 0.08679199218 &&",
+							"?lat        >=     ?berlinLat - 0.03190235436 && ",
+							"?long       <=     ?berlinLong + 0.08679199218)",
+							"}");
+
+		} else if (choice == 4) {
+			pre = StrUtils.strjoinNL(
+					"PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>",
+					"PREFIX foaf: <http://xmlns.com/foaf/0.1/>",
+					"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
+					"PREFIX p: <http://dbpedia.org/property/>");
+
+			qs = StrUtils
+					.strjoinNL(
+							"SELECT ?s ?homepage WHERE {",
+							"<http://dbpedia.org/resource/New_York_City> geo:lat ?nyLat .",
+							"<http://dbpedia.org/resource/New_York_City> geo:long ?nyLong . ",
+							"?s geo:lat ?lat .", "?s geo:long ?long .",
+							"?s foaf:homepage ?homepage .", "FILTER (",
+							"?lat        <=     ?nyLat + 0.3190235436 &&",
+							"?long       >=     ?nyLong - 0.8679199218 &&",
+							"?lat        >=     ?nyLat - 0.3190235436 && ",
+							"?long       <=     ?nyLong + 0.8679199218)", "}");
+		} else {
+			throw new InvalidChoiceException();
+		}
+		return new String[] { pre, qs };
 	}
 
 }
