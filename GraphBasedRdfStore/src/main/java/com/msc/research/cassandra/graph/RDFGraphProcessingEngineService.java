@@ -56,7 +56,7 @@ public interface RDFGraphProcessingEngineService {
 	 * @throws RDFGraphProcessisngException
 	 *             If an ERROR occurs during the RDF Graph processing.
 	 */
-	void queryRdfModel(final String pre, final String qs)
+	String queryRdfModel(final String pre, final String qs)
 			throws RDFGraphProcessisngException;
 
 }

@@ -168,9 +168,17 @@ public class RDFStoreController {
 				int choice = Integer.parseInt(userInput);
 				String[] sparqlQuery = generateSPARQLQuery(choice);
 
+				long startTime = System.currentTimeMillis();
+
 				// Executing the query against the RDF model.
-				rdfGraphProcessingEngineService.queryRdfModel(sparqlQuery[0],
-						sparqlQuery[1]);
+				String result = rdfGraphProcessingEngineService.queryRdfModel(
+						sparqlQuery[0], sparqlQuery[1]);
+
+				System.out.println(result);
+
+				long stopTime = System.currentTimeMillis();
+				long elapsedTime = stopTime - startTime;
+				System.out.println(elapsedTime);
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

@@ -48,7 +48,7 @@ public class JenaRDFGraphProcessingEngine implements
 			throws RDFGraphProcessisngException {
 
 		model = ModelFactory.createDefaultModel();
-		logger.info("Building the Graph Model from the data fetched fromCassandra cluster.");
+		logger.info("Building the Graph Model from the data fetched from Cassandra cluster.");
 		for (Row row : source) {
 			Resource resource = model.createResource(row.getString("subject"));
 			Property property = model
@@ -98,7 +98,7 @@ public class JenaRDFGraphProcessingEngine implements
 		// logger.info("Printing the Graph Model.");
 
 		// FileOutputStream fop = null;
-		// File file = new File("test-rdf.txt");
+		// File file = new File("test-rdf.nt");
 		// try {
 		// fop = new FileOutputStream(file);
 		//
@@ -113,7 +113,7 @@ public class JenaRDFGraphProcessingEngine implements
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-
+		//
 		// RDFDataMgr.write(fop, model, Lang.NTRIPLES);
 
 	}
@@ -177,8 +177,9 @@ public class JenaRDFGraphProcessingEngine implements
 	}
 
 	@Override
-	public void queryRdfModel(final String pre, final String qs)
+	public String queryRdfModel(final String pre, final String qs)
 			throws RDFGraphProcessisngException {
+		String resultStr = null;
 		if (model == null) {
 			throw new RDFGraphProcessisngException(
 					"A null RDF Grraph model can NOT be queried.");
@@ -188,8 +189,11 @@ public class JenaRDFGraphProcessingEngine implements
 		Query query = QueryFactory.create(pre + qs);
 		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
 			com.hp.hpl.jena.query.ResultSet results = qexec.execSelect();
-			ResultSetFormatter.out(System.out, results);
-		}
-	}
+			// This fix was given mainly because of the web client.
+			// ResultSetFormatter.out(System.out, results);
+			resultStr = ResultSetFormatter.asText(results);
 
+		}
+		return resultStr;
+	}
 }
