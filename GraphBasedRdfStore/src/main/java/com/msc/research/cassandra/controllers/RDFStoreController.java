@@ -1,8 +1,11 @@
 package com.msc.research.cassandra.controllers;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.riot.Lang;
@@ -36,15 +39,25 @@ public class RDFStoreController {
 		ResultSet resultSet = null;
 
 		try {
+			// Reading the properties files.
+			InputStream input = new FileInputStream("src/main/resources/config.properties");
+			// load a properties file
+			Properties prop = new Properties();
+			prop.load(input);
+
+			// get the property
+			String[] inputDataFiles = prop.getProperty("inputFiles").split(",");
+
 			rdfStoreDaoService = CassandraRDFStoreDaoServiceImpl.newInstance();
 			// Prints the metadata related to this connection.
-			// rdfStoreDaoService.printConnectionMetadata();
+			rdfStoreDaoService.printConnectionMetadata();
 
 			// Drop the existing RDF store first.
 			// rdfStoreDaoService.dropRDFStore();
 
 			// Then create a new RDF Store with some sample data in it.
-			// rdfStoreDaoService.createRDFStore(createRDFData());
+			// rdfStoreDaoService.createRDFStore(rdfGraphProcessingEngineService
+			// .getRDFDataSet(inputDataFiles));
 
 			// read RDF triples from the RDF store.
 			resultSet = rdfStoreDaoService.getRdfData();

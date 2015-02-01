@@ -2,7 +2,10 @@ package com.msc.research.cassandra.graph;
 
 import java.io.OutputStream;
 import java.util.List;
-import java.util.logging.Logger;
+
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.log4j.Logger;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -36,8 +39,8 @@ public class JenaRDFGraphProcessingEngine implements
 	// private final String NS = "http://example.com/msc#";
 	private Model model = null;
 
-	private static final Logger logger = Logger
-			.getLogger(JenaRDFGraphProcessingEngine.class.getName());
+	private static final Logger LOGGER = Logger
+			.getLogger(JenaRDFGraphProcessingEngine.class);
 
 	private JenaRDFGraphProcessingEngine(
 			final DataTransformer<List<Statement>, List<RDFTriple>> stmtToRDFTripleDataTransformer) {
@@ -48,7 +51,7 @@ public class JenaRDFGraphProcessingEngine implements
 			throws RDFGraphProcessisngException {
 
 		model = ModelFactory.createDefaultModel();
-		logger.info("Building the Graph Model from the data fetched from Cassandra cluster.");
+		LOGGER.info("Building the Graph Model from the data fetched from Cassandra cluster.");
 		for (Row row : source) {
 			Resource resource = model.createResource(row.getString("subject"));
 			Property property = model
@@ -94,27 +97,7 @@ public class JenaRDFGraphProcessingEngine implements
 			resource.addProperty(property, objectNode);
 		}
 
-		logger.info("Graph Model is built successfully.");
-		// logger.info("Printing the Graph Model.");
-
-		// FileOutputStream fop = null;
-		// File file = new File("test-rdf.nt");
-		// try {
-		// fop = new FileOutputStream(file);
-		//
-		// // if file doesnt exists, then create it
-		// if (!file.exists()) {
-		// file.createNewFile();
-		// }
-		// } catch (FileNotFoundException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// RDFDataMgr.write(fop, model, Lang.NTRIPLES);
+		LOGGER.info("Graph Model is built successfully.");
 
 	}
 
@@ -185,15 +168,27 @@ public class JenaRDFGraphProcessingEngine implements
 					"A null RDF Grraph model can NOT be queried.");
 		}
 
-		logger.info("Querying the RDF graph model.");
+		LOGGER.info("Querying the RDF graph model.");
 		Query query = QueryFactory.create(pre + qs);
 		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
 			com.hp.hpl.jena.query.ResultSet results = qexec.execSelect();
 			// This fix was given mainly because of the web client.
 			// ResultSetFormatter.out(System.out, results);
-			resultStr = ResultSetFormatter.asText(results);
+			resultStr = ResultSetFormatter.asXMLString(results);
 
 		}
 		return resultStr;
+	}
+
+	@Override
+	public StmtIterator getRDFDataSet(String[] inputDataFiles) {
+		final Model inputGraphModel = RDFDataMgr.loadModel(
+				inputDataFiles[0].trim(), Lang.NTRIPLES);
+		for (int i = 1; i < inputDataFiles.length; i++) {
+			inputGraphModel.add(RDFDataMgr.loadModel(inputDataFiles[i].trim(),
+					Lang.NTRIPLES));
+
+		}
+		return inputGraphModel.listStatements();
 	}
 }

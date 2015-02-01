@@ -2,6 +2,8 @@ package com.msc.research.cassandra.dao;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
@@ -26,6 +28,8 @@ import com.msc.research.cassandra.transformer.ResultSetToRDFTripleTransformer;
  *
  */
 public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
+	private static final Logger LOGGER = Logger
+			.getLogger(CassandraRDFStoreDaoServiceImpl.class);
 	private final DataTransformer<ResultSet, List<RDFTriple>> transformer;
 
 	private static RDFStoreDaoService rdfStoreDaoService = null;
@@ -40,6 +44,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 	 * RDF triples.
 	 */
 	private void createSchema() {
+		LOGGER.info("Creating the Database schema.");
 		Session session = CassandraUtil.getSession();
 		session.execute("CREATE KEYSPACE rdfstore WITH replication"
 				+ "= {'class':'SimpleStrategy', 'replication_factor':3};");
@@ -53,6 +58,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 	 * Loads the RDF data into the triple table.
 	 */
 	private void loadData(final StmtIterator stmtIterator) {
+		LOGGER.info("Loading the data into the database.");
 		Session session = CassandraUtil.getSession();
 		PreparedStatement statement = session
 				.prepare("INSERT INTO rdfstore.tripletab "
@@ -71,6 +77,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 
 	@Override
 	public ResultSet getRdfData() {
+		LOGGER.info("Fetching data from the RDF store.");
 		ResultSet resultSet = CassandraUtil.getSession().execute(
 				"SELECT * FROM rdfstore.tripletab;");
 
@@ -106,6 +113,7 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 
 	@Override
 	public void close() {
+		LOGGER.info("Closing the Database connection established.");
 		CassandraUtil.close();
 
 	}
@@ -119,7 +127,9 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 
 	@Override
 	public void dropRDFStore() {
-		CassandraUtil.getSession().execute("DROP KEYSPACE rdfstore;");
+		close();
+		LOGGER.info("Dropping the RDf Store.");
+		CassandraUtil.getSession().execute("DROP KEYSPACE IF EXISTS rdfstore;");
 
 	}
 
@@ -127,12 +137,11 @@ public class CassandraRDFStoreDaoServiceImpl implements RDFStoreDaoService {
 	public void printConnectionMetadata() {
 		Metadata metadata = CassandraUtil.getCluster().getMetadata();
 
-		System.out.printf("Connected to cluster: %s\n",
-				metadata.getClusterName());
+		LOGGER.info("Connected to cluster: " + metadata.getClusterName());
 
 		for (Host host : metadata.getAllHosts()) {
-			System.out.printf("Datacenter: %s; Host: %s; Rack: %s\n",
-					host.getDatacenter(), host.getAddress(), host.getRack());
+			LOGGER.info("Datacenter: " + host.getDatacenter() + "; Host: "
+					+ host.getAddress() + "; Rack: " + host.getRack());
 		}
 	}
 }
